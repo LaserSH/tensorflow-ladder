@@ -91,7 +91,7 @@ def extract_labels(filename, one_hot=False):
 
 class DataSet(object):
 
-  def __init__(self, images, labels, fake_data=False, one_hot=False):
+  def __init__(self, images, labels, fake_data=False, one_hot=False, flatten=True):
     """Construct a DataSet. one_hot arg is used only if fake_data is true."""
 
     if fake_data:
@@ -105,9 +105,11 @@ class DataSet(object):
 
       # Convert shape from [num examples, rows, columns, depth]
       # to [num examples, rows*columns] (assuming depth == 1)
-      assert images.shape[3] == 1
-      images = images.reshape(images.shape[0],
-                              images.shape[1] * images.shape[2])
+      if flatten:
+        assert images.shape[3] == 1
+        images = images.reshape(images.shape[0],
+                                images.shape[1] * images.shape[2])
+
       # Convert from [0, 255] -> [0.0, 1.0].
       images = images.astype(numpy.float32)
       images = numpy.multiply(images, 1.0 / 255.0)
@@ -161,7 +163,7 @@ class DataSet(object):
 
 
 def read_data_sets(
-    train_dir, fake_data=False, one_hot=False,
+    train_dir, fake_data=False, one_hot=False, flatten=True,
     validation_size=5000, labeled_size=40000):
   class DataSets(object):
     pass
@@ -210,9 +212,9 @@ def read_data_sets(
 
   train_unlabeled_labels.fill(0)
 
-  data_sets.train_labeled = DataSet(train_labeled_images, train_labeled_labels)
-  data_sets.train_unlabeled = DataSet(train_unlabeled_images, train_unlabeled_labels)
-  data_sets.validation = DataSet(validation_images, validation_labels)
-  data_sets.test = DataSet(test_images, test_labels)
+  data_sets.train_labeled = DataSet(train_labeled_images, train_labeled_labels, flatten=flatten)
+  data_sets.train_unlabeled = DataSet(train_unlabeled_images, train_unlabeled_labels, flatten=flatten)
+  data_sets.validation = DataSet(validation_images, validation_labels, flatten=flatten)
+  data_sets.test = DataSet(test_images, test_labels,flatten=flatten)
 
   return data_sets

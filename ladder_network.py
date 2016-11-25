@@ -179,8 +179,12 @@ class Graph:
 class _Placeholders:
   def __init__(self, input_layer_size, class_count):
     with tf.name_scope("placeholders") as scope:
-      self.inputs = tf.placeholder(tf.float32, [None, input_layer_size], name = 'inputs')
-      self.labels = tf.placeholder(tf.float32, [None, class_count], name = 'labels')
+      self.inputs = tf.placeholder(tf.float32, 
+                                   shape=([None,] + input_layer_size),
+                                   name = 'inputs')
+      self.labels = tf.placeholder(tf.float32, 
+                                   shape=([None,] + [class_count]),
+                                   name = 'labels')
       self.is_training_phase = tf.placeholder(tf.bool, name = 'is_training_phase')
 
   def placements(self, inputs, labels = None, is_training_phase = True):
