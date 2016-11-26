@@ -247,7 +247,6 @@ class _ForwardPass:
 
   def _decoder_layers(self, clean_encoder_layers, corrupted_encoder_layers,
         is_training_phase):
-    # FIXME: Actually the first decoder layer should get the correct label from above
     encoder_layers = reversed(zip(clean_encoder_layers, corrupted_encoder_layers))
     layer_accumulator = [None]
     for clean_layer, corrupted_layer in encoder_layers:

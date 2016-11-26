@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import gzip
 import os
+import zca_whitening
 
 import numpy
 from six.moves import urllib
@@ -102,17 +103,27 @@ class DataSet(object):
           'images.shape: %s labels.shape: %s' % (images.shape,
                                                  labels.shape))
       self._num_examples = images.shape[0]
+      shape_d = images.shape
 
       # Convert shape from [num examples, rows, columns, depth]
       # to [num examples, rows*columns] (assuming depth == 1)
-      if flatten:
-        assert images.shape[3] == 1
-        images = images.reshape(images.shape[0],
-                                images.shape[1] * images.shape[2])
+      assert images.shape[3] == 1
+      images = images.reshape(images.shape[0],
+                              images.shape[1] * images.shape[2])
 
       # Convert from [0, 255] -> [0.0, 1.0].
       images = images.astype(numpy.float32)
       images = numpy.multiply(images, 1.0 / 255.0)
+      images_mean = numpy.mean(images, axis=0)
+      images = images - numpy.tile(images_mean, (shape_d[0], 1))
+
+      #Apply ZCA whitening on the whole images
+      # images = zca_whitening.apply(images)
+
+      if not flatten:
+        images = images.reshape(shape_d)
+
+
     self._images = images
     self._labels = labels
     self._epochs_completed = 0
@@ -197,7 +208,7 @@ def read_data_sets(
   assert len(test_labels) == len(test_images)
 
   unlabeled_size = len(train_images) - labeled_size - validation_size
-  assert unlabeled_size > 0
+  assert unlabeled_size >= 0
 
   validation_images = train_images[:validation_size]
   validation_labels = train_labels[:validation_size]
