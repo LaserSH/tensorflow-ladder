@@ -1,5 +1,5 @@
 import random
-import input_data
+import input_data_mnist
 import ladder_network
 import tensorflow as tf
 
@@ -8,7 +8,7 @@ labeled_size = 50000
 mnist_size = 60000
 
 print "Loading MNIST data"
-mnist = input_data.read_data_sets(
+mnist = input_data_mnist.read_data_sets(
     "/zfsauton/home/hanqis/data/mnist",
     one_hot=True,
     flatten=True,
@@ -26,6 +26,7 @@ hyperparameters = {
   "noise_level": 0.2,
   "input_layer_size": [784],
   "class_count": 10,
+  "is_cnn": False,
   "encoder_layer_definitions": [
     (1000, tf.nn.relu), # first hidden layer
     (500, tf.nn.relu), 
