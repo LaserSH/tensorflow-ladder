@@ -1,7 +1,8 @@
 import tensorflow as tf
 import numpy
-from tensorflow.python import control_flow_ops
-from batch_normalization import batch_norm
+from tensorflow.python.ops import control_flow_ops
+from utils import *
+import ladder_alexnet_2d
 from time import strftime
 
 
@@ -63,16 +64,23 @@ class Graph:
       noise_level,
       input_layer_size,
       class_count,
+      is_cnn,
       encoder_layer_definitions,
       denoising_cost_multipliers):
-    assert class_count == encoder_layer_definitions[-1][0]
+    # assert class_count == encoder_layer_definitions[-1][0]
 
     self.learning_rate = learning_rate
     self.denoising_cost_multipliers = denoising_cost_multipliers
 
     self.placeholders = _Placeholders(input_layer_size, class_count)
 
-    self.output = _ForwardPass(self.placeholders,
+    if is_cnn:
+      self.output = ladder_alexnet_2d.ForwardAlexnet(
+          self.placeholders,
+          noise_level=noise_level,
+          encoder_layer_definitions=encoder_layer_definitions)
+    else:
+      self.output = _ForwardPass(self.placeholders,
         noise_level=noise_level,
         encoder_layer_definitions=encoder_layer_definitions)
 
@@ -169,9 +177,10 @@ class Graph:
 
       return total_denoising_cost, layer_costs
 
-  def _layer_denoising_cost(self, encoder, decoder, cost_multiplier):
+  def _layer_denoising_cost(self, encoder, decoder, cost_multiplier): 
     return cost_multiplier * self._mean_squared_error(
-        encoder.pre_activation, decoder.post_2nd_normalization)
+        tf.reshape(encoder.pre_activation, [-1]),
+        tf.reshape(decoder.post_2nd_normalization, [-1]))
 
   def _mean_squared_error(self, expected, actual):
     return tf.reduce_mean(tf.pow(expected - actual, 2))

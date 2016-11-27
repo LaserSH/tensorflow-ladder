@@ -122,6 +122,7 @@ class DataSet(object):
 
       if not flatten:
         images = images.reshape(shape_d)
+        images = numpy.tile(images, (1,1,1,3))
 
 
     self._images = images
